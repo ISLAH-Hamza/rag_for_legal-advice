@@ -6,7 +6,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
 
-legalRag = RAG(llm=OpenAI(temperature=0.7),vector_db_path='./data')
+legalRag = RAG(llm=OpenAI(temperature=0.7))
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
 
 st.title("Generative AI for Legal Advice")
@@ -24,7 +24,7 @@ with tab1:
         uploaded_file = existing_files[0]  # Get the first file
         file_path = os.path.join(DATA_FOLDER, uploaded_file)
         st.success(f"The file '{uploaded_file}' is already in the data folder. State: Activated ✅")
-        legalRag.indexing(f"./uploaded_pdfs/{uploaded_file}", text_splitter)
+        legalRag.indexing("./data", text_splitter)
     else:
         st.info("Please upload a file to check its state.")
         
@@ -41,8 +41,9 @@ with tab1:
     
         with open(os.path.join(DATA_FOLDER, new_uploaded_file.name), "wb") as f:
             f.write(new_uploaded_file.getbuffer())
-        
-        st.rerun()
+            
+        legalRag.indexing(f"./uploaded_pdfs/{uploaded_file}", text_splitter)
+
         
 
 

@@ -5,6 +5,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from api import *
+from pathlib import Path
 import warnings
 
 
@@ -63,20 +64,21 @@ You are an AI trained to classify questions as either **legal** or **general**.
 
 class RAG:
     
-  def __init__(self,llm,vector_db_path):
+  def __init__(self,llm):
     self.llm=llm
-    self.vector_db_path=vector_db_path
     self.retriever=None
 
 
-  def indexing(self,document_path,splitter):
-    loader=PyPDFLoader(document_path)
-    docs=loader.load()
-    docs=splitter.split_documents(docs)
-    try:
-      vectors_db=Chroma(persist_directory=self.vector_db_path, embedding_function=OpenAIEmbeddings())
-    except:
+  def indexing(self,source_path,splitter):
+    path=Path(source_path)
+    if path.is_dir():
+      vectors_db=Chroma(persist_directory=source_path, embedding_function=OpenAIEmbeddings())
+    else:
+      loader=PyPDFLoader(source_path)
+      docs=loader.load()
+      docs=splitter.split_documents(docs)
       vectors_db=Chroma.from_documents(docs, OpenAIEmbeddings(),persist_directory=self.vector_db_path)
+      
     self.retriever=vectors_db.as_retriever(k=4)  
 
   def query_translation(self,query):
