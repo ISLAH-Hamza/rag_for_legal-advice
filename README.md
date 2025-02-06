@@ -80,6 +80,13 @@ Si la version de Python affichée correspond à celle de votre environnement, al
 
 Vous avez maintenant un environnement Python propre et bien configuré pour travailler sur votre projet RAG pour l'assistance juridique. Il ne vous reste plus qu'à commencer à développer votre application !
 
+## Étape 4 : Création du Projet
+Nous allons maintenant créer un dossier pour notre projet sous le nom legal_rag.
 
+1. Ajouter une Variable d'Environnement
+Pour ce projet, nous avons besoin d'utiliser une clé API provenant d'OpenAI. Pour cela, nous allons créer un fichier .env et y ajouter notre clé API.
+
+2. Ajouter un Dossier de Données
+Nous allons également ajouter un dossier data où nous stockerons les données nécessaires au projet.
 
 # RAG et base de donner vecotriel
