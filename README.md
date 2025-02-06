@@ -208,3 +208,51 @@ query = "Quels sont les droits d'un employé en cas de licenciement ?"
 response = qa_chain.run(query)
 print(response)
 ```
+
+## Limitations de cette Approche Naïve et Améliorations
+
+Bien que cette approche de RAG fonctionne, elle présente plusieurs limitations :
+
+Recherches basées uniquement sur la similarité vectorielle : Le modèle peut retourner des résultats pertinents en termes de distance dans l'espace des embeddings, mais pas forcément en fonction de la pertinence sémantique exacte.
+
+Manque de pondération des résultats : Certains documents plus pertinents peuvent être noyés dans la masse.
+
+Absence de fusion des résultats multi-sources : Lorsqu'un même sujet est traité dans plusieurs documents, l'agrégation d'information est limitée.
+
+Manque de post-traitement intelligent : Les résultats bruts sont retournés sans réorganisation ou hiérarchisation avancée.
+
+Améliorations avec des Techniques Avancées de RAG
+
+Pour surmonter ces limitations, on peut utiliser des techniques avancées comme Reciprocal Rank Fusion (RRF) et d'autres méthodes de re-ranking :
+
+1. Reciprocal Rank Fusion (RRF) :
+
+Fusionne les résultats de plusieurs requêtes ou méthodes de recherche.
+
+Améliore la pertinence en combinant plusieurs scores de recherche.
+
+Extrait les meilleurs résultats en donnant une pondération plus équilibrée.
+
+Implémentation de RRF avec ChromaDB
+
+```Python
+def reciprocal_rank_fusion(results_list, k=60):
+    fused_scores = {}
+    for rank, doc in enumerate(results_list, start=1):
+        fused_scores[doc] = fused_scores.get(doc, 0) + 1 / (k + rank)
+    return sorted(fused_scores.items(), key=lambda x: x[1], reverse=True)
+```
+
+2. Re-ranking avec un modèle Transformer :
+
+Utiliser un modèle comme ColBERT pour améliorer la qualité des résultats récupérés.
+
+Appliquer un reranking basé sur l'attention multi-head.
+
+3. Fusion Multi-Sources :
+
+Enrichir les résultats en combinant plusieurs sources de données externes.
+
+Appliquer une pondération dynamique en fonction du contexte de la requête.
+
+Avec ces techniques, on peut significativement améliorer la pertinence des résultats retournés et optimiser la performance du système RAG pour une meilleure assistance à la prise de décision
