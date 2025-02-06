@@ -8,8 +8,8 @@ Pour travailler sur un projet Python tel qu'un système de RAG (Retrieval-Augmen
 ## Étape 0 : Vérifier et Installer Python
 Avant de commencer, assurez-vous d'avoir un interpréteur Python installé sur votre machine. Il existe deux principales options :
 
-**Installer Anaconda** : Recommandé si vous travaillez avec du data science ou du machine learning. [Télécharger Anaconda](https://www.anaconda.com/download)
-**Installer Python directement** : Option plus légère et flexible. [Télécharger Python.](https://www.python.org/downloads/)
+- **Installer Anaconda** : Recommandé si vous travaillez avec du data science ou du machine learning. [Télécharger Anaconda](https://www.anaconda.com/download)
+- **Installer Python directement** : Option plus légère et flexible. [Télécharger Python.](https://www.python.org/downloads/)
 
 Vérifiez si Python/anconda est déjà installé en exécutant la commande suivante dans un terminal :
 
@@ -105,19 +105,106 @@ Nous allons également ajouter un dossier data où nous stockerons les données 
 # RAG et base de donner vecotriel
 
 
+## Indexation des Documents
+
+L'indexation est une étape essentielle dans la construction d'un système RAG (Retrieval-Augmented Generation).
+Elle consiste à transformer les documents sources en embeddings afin qu'ils puissent être stockés et recherchés efficacement dans une base de données vectorielle.
+### Chargement des Documents PDF
+
+Nous allons commencer par téléverser un dossier contenant des fichiers PDF et les manipuler avec la bibliothèque PyPDF de LangChain.
+Exemple d'utilisation de PyPDF pour extraire du texte
+
+```Python
+
+from langchain.document_loaders import PyPDFLoader
+
+# Charger un document PDF
+loader = PyPDFLoader("chemin/vers/le/document.pdf")
+documents = loader.load()
+
+# Afficher le contenu extrait
+documents[:2]  # Affiche les deux premiers segments extraits
+
+```
+### Segmentation des Documents en Chunks
+Une fois le texte extrait, nous devons le diviser en morceaux (chunks) pour faciliter l'indexation et la recherche.
 
 
-## indexing
-we start by uploadding the pdf folder
-we could then manipulating the folder using Pypdf from langchain
+Méthodes de Chunking dans LangChain:
 
-then split it into chunks there are sevral approche for chnking in langchain packege
+- RecursiveCharacterTextSplitter : Divise le texte en utilisant des caractères spécifiques comme limite.
+
+- CharacterTextSplitter : Utilise un caractère (ex. '\n' ou ' ') pour scinder le texte.
+
+- TokenTextSplitter : Divise le texte en fonction du nombre de tokens.
+
+- NLTKTextSplitter : Utilise la bibliothèque NLTK pour le traitement du langage naturel.
+
+- SentenceTransformersTextSplitter : Utilise des modèles de transformer pour diviser intelligemment le texte.
 
 
+Exemple d'utilisation de RecursiveCharacterTextSplitter
+```Python
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-## retreivel
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=500,  # Nombre de caractères par chunk
+    chunk_overlap=50  # Chevauchement entre les chunks
+)
 
+chunks = text_splitter.split_documents(documents)
+print(f"Nombre de chunks générés: {len(chunks)}")
 
+```
 
-## generation
+Stockage des Chunks dans une Base de Données Vectorielle (ChromaDB)
 
+Nous allons stocker ces chunks sous forme de vecteurs dans ChromaDB.
+```Python
+import chromadb
+from langchain.vectorstores import Chroma
+from langchain.embeddings import OpenAIEmbeddings
+
+# Initialiser ChromaDB
+chroma_client = chromadb.PersistentClient(path="./chroma_db")
+
+# Convertir les chunks en embeddings et les stocker
+embedding_function = OpenAIEmbeddings()
+vector_store = Chroma.from_documents(chunks, embedding_function, client=chroma_client)
+```
+
+## Récupération des Informations (Retrieval)
+Une fois les embeddings stockés, nous pouvons créer un objet retriever pour rechercher les documents les plus pertinents.
+
+Création d'un Retriever avec ChromaDB
+
+```Python
+    retriever = vector_store.as_retriever()
+```
+
+Exemples d'Utilisation de la Récupération d'Informations
+
+```Python
+query = "Quels sont les règlements juridiques pour les contrats de travail ?"
+retrieved_docs = retriever.get_relevant_documents(query)
+
+# Afficher les résultats
+for doc in retrieved_docs:
+    print(doc.page_content)
+```
+
+## Génération de Réponses Basées sur les Documents Récupérés
+Après avoir récupéré les documents pertinents, nous pouvons les utiliser pour enrichir une réponse générée par un modèle de langage.
+
+Example:
+```Python
+from langchain.llms import OpenAI
+from langchain.chains import RetrievalQA
+
+llm = OpenAI(model_name="gpt-4", temperature=0.5)
+qa_chain = RetrievalQA(llm=llm, retriever=retriever)
+
+query = "Quels sont les droits d'un employé en cas de licenciement ?"
+response = qa_chain.run(query)
+print(response)
+```
