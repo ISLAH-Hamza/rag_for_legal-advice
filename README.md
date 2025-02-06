@@ -256,3 +256,184 @@ Enrichir les résultats en combinant plusieurs sources de données externes.
 Appliquer une pondération dynamique en fonction du contexte de la requête.
 
 Avec ces techniques, on peut significativement améliorer la pertinence des résultats retournés et optimiser la performance du système RAG pour une meilleure assistance à la prise de décision
+
+
+# Getting Started with Streamlit
+## Creating Your First Streamlit App
+A simple Streamlit app is created using a Python script. Example:
+
+```Python
+
+import streamlit as st
+
+st.title("Hello, Streamlit! 👋")
+st.write("This is my first Streamlit app.")
+
+```
+
+
+Save this as app.py and run it using:
+
+```sh
+streamlit run app.py
+```
+
+This will launch a local web server, and the app will open in a browser.
+
+
+## Adding Widgets
+Widgets allow user interaction:
+
+```Python
+name = st.text_input("Enter your name:")
+st.write(f"Hello, {name}!")
+
+```
+
+Other widgets include:
+- st.button("Click me")
+- st.slider("Select a value", 0, 100)
+- st.checkbox("Agree to terms")
+
+## Displaying Data
+
+Tables and DataFrames
+
+```Python
+import pandas as pd
+
+df = pd.DataFrame({
+    'Name': ['Alice', 'Bob', 'Charlie'],
+    'Age': [25, 30, 35]
+})
+
+st.table(df)
+st.dataframe(df)  # Allows scrolling
+
+```
+
+
+Charts and Plots
+```Python
+import matplotlib.pyplot as plt
+import numpy as np
+
+x = np.linspace(0, 10, 100)
+y = np.sin(x)
+
+fig, ax = plt.subplots()
+ax.plot(x, y)
+st.pyplot(fig)
+
+```
+
+## Handling User Input
+
+```Python
+if st.button("Say Hello"):
+    st.write("Hello, World!")
+```
+
+For file uploads:
+```Python
+
+uploaded_file = st.file_uploader("Choose a file")
+if uploaded_file is not None:
+    st.write("File uploaded successfully!")
+
+```
+
+## Layout and Organization
+
+clumns
+```Python
+
+col1, col2 = st.columns(2)
+col1.write("Column 1")
+col2.write("Column 2")
+
+```
+
+Sidebar
+```python
+
+st.sidebar.title("Sidebar Menu")
+st.sidebar.button("Click me")
+
+```
+
+Tabs
+
+```
+
+import streamlit as st
+
+st.title("Streamlit Tabs Example")
+
+tab1, tab2, tab3 = st.tabs(["Home", "About", "Contact"])
+
+with tab1:
+    st.header("🏠 Welcome to Home")
+    st.write("This is the main dashboard.")
+
+with tab2:
+    st.header("📖 About")
+    st.write("This tab contains information about the project.")
+
+with tab3:
+    st.header("📩 Contact")
+    st.write("You can reach us at example@example.com.")
+
+```
+
+
+
+## chat with llm
+
+```Python
+import streamlit as st
+import openai
+
+# Set up the OpenAI API key (use environment variables in production)
+openai.api_key = "your-api-key"
+
+st.title("💬 Chat with LLM")
+
+# Create chat history using session state
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# Display previous chat messages
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+
+# Input field for user messages
+user_input = st.chat_input("Type your message...")
+if user_input:
+    # Add user message to session state
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    
+    with st.chat_message("user"):
+        st.markdown(user_input)
+
+    # Generate response from OpenAI
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[{"role": msg["role"], "content": msg["content"]} for msg in st.session_state.messages]
+    )
+
+    bot_response = response["choices"][0]["message"]["content"]
+
+    # Add bot message to session state
+    st.session_state.messages.append({"role": "assistant", "content": bot_response})
+
+    with st.chat_message("assistant"):
+        st.markdown(bot_response)
+
+```
+
+
+# Final Project
+
+create legal rag adive using rag and streamlit
